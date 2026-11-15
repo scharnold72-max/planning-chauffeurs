@@ -61,32 +61,16 @@ function fmt(d){return d.toLocaleDateString('fr-CH',{weekday:'long',day:'numeric
 function esc(x){return String(x==null?'':x).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function notice(t){$('notice').textContent=t;$('notice').classList.remove('hidden')}
 function clearNotice(){$('notice').classList.add('hidden')}
-var BRIDGE_URL='https://script.google.com/macros/s/AKfycbwMC2nb93WgV-oKkQ5JO105-VTJmkrq1QGOE5rF0oqfhGIChzcFAtpTUcDXnCOqyfN7Cg/exec?bridge=1';
-var bridgeFrame=null,bridgeReady=false,bridgeCounter=0,bridgePending={};
-function bridgeStart(){
- if(bridgeFrame)return;
- bridgeFrame=document.createElement('iframe');bridgeFrame.src=BRIDGE_URL;
- bridgeFrame.title='Connexion aux données';bridgeFrame.setAttribute('aria-hidden','true');
- bridgeFrame.style.cssText='position:absolute;width:1px;height:1px;opacity:0;pointer-events:none;border:0;left:-9999px';
- document.body.appendChild(bridgeFrame);
-}
-window.addEventListener('message',function(ev){
- if(!bridgeFrame||ev.source!==bridgeFrame.contentWindow)return;
- // The bridge may be hosted on a redirected Google user-content domain.
- if(!/^https:\/\/(?:script\.google\.com|[a-z0-9.-]*googleusercontent\.com)$/.test(ev.origin))return;
- var m=ev.data;if(!m||typeof m!=='object')return;
- if(m.kind==='grillos-ready'){bridgeReady=true;window.dispatchEvent(new Event('grillos-bridge-ready'));return}
- if(m.kind==='grillos-result'&&bridgePending[m.id]){var p=bridgePending[m.id];delete bridgePending[m.id];clearTimeout(p.timer);m.ok?p.resolve(m.result):p.reject(Error(m.error||'Erreur serveur'))}
-});
-function call(name){
+var API_URL='https://planning-grillos-api.scharnold72.workers.dev';
+async function call(name){
  var args=Array.prototype.slice.call(arguments,1);
- return new Promise(function(resolve,reject){
-  bridgeStart();var id=++bridgeCounter;
-  var timer=setTimeout(function(){delete bridgePending[id];reject(Error('Connexion au serveur impossible (60 s). Vérifiez le déploiement Bridge et les cookies tiers.'))},60000);
-  bridgePending[id]={resolve:resolve,reject:reject,timer:timer};
-  function send(){if(!bridgePending[id])return;if(!bridgeReady){window.addEventListener('grillos-bridge-ready',send,{once:true});return}bridgeFrame.contentWindow.postMessage({kind:'grillos-call',id:id,name:name,args:args},'*')}
-  send();
- });
+ var response;
+ try{response=await fetch(API_URL,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({name:name,args:args}),cache:'no-store'})}
+ catch(e){throw Error('Connexion Cloudflare impossible : '+e.message)}
+ var data;
+ try{data=await response.json()}catch(e){throw Error('Réponse Cloudflare invalide (HTTP '+response.status+')')}
+ if(!response.ok||(data&&data.ok===false))throw Error(data&&data.error?data.error:'Erreur serveur HTTP '+response.status);
+ return data;
 }
 function rows(date){var d=$('driver').value;return records.filter(function(r){return r.date===date&&(d==='Tous'||r.driver===d)}).sort(function(a,b){return PEOPLE.indexOf(a.driver)-PEOPLE.indexOf(b.driver)})}
 function dates(){if(view==='day')return [new Date(current)];if(view==='week'){var w=monday(current);return Array.from({length:7},function(_,i){return plus(w,i)})}var a=monday(new Date(current.getFullYear(),current.getMonth(),1,12));var z=new Date(current.getFullYear(),current.getMonth()+1,0,12);var end=plus(z,(7-z.getDay())%7);var out=[];for(var d=a;d<=end;d=plus(d,1))out.push(d);return out}
