@@ -1,0 +1,11 @@
+PLANNING CHAUFFEURS — PUBLICACIÓN EN GITHUB PAGES
+
+1. Abre https://github.com/new y crea el repositorio público planning-chauffeurs.
+2. En el repositorio, pulsa Add file > Upload files.
+3. Sube LOS CINCO archivos de esta carpeta (index.html, manifest.webmanifest, sw.js, icon-192.png, icon-512.png). No subas el ZIP sin extraer.
+4. Pulsa Commit changes.
+5. Settings > Pages > Build and deployment: Deploy from a branch; Branch: main, carpeta /(root); Save.
+6. Espera a que GitHub muestre la dirección: https://scharnold72-max.github.io/planning-chauffeurs/
+7. Abre esa dirección en Chrome y elige Añadir a pantalla de inicio o Instalar aplicación.
+
+IMPORTANTE: esta es una aplicación de acceso, NO una copia del calendario. El botón abre el calendario original de Google Apps Script. La página de acceso y su icono se pueden instalar como PWA, pero el calendario puede abrirse en Chrome o pedir autenticación. La sincronización de datos depende de la aplicación original. GitHub Pages es público: no subas información privada ni claves.
