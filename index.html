@@ -70,7 +70,8 @@ async function call(name){
  var data;
  try{data=await response.json()}catch(e){throw Error('Réponse Cloudflare invalide (HTTP '+response.status+')')}
  if(!response.ok||(data&&data.ok===false))throw Error(data&&data.error?data.error:'Erreur serveur HTTP '+response.status);
- return data;
+ if(!data||data.ok!==true||!Object.prototype.hasOwnProperty.call(data,'result'))throw Error('Format de réponse API inattendu');
+ return data.result;
 }
 function rows(date){var d=$('driver').value;return records.filter(function(r){return r.date===date&&(d==='Tous'||r.driver===d)}).sort(function(a,b){return PEOPLE.indexOf(a.driver)-PEOPLE.indexOf(b.driver)})}
 function dates(){if(view==='day')return [new Date(current)];if(view==='week'){var w=monday(current);return Array.from({length:7},function(_,i){return plus(w,i)})}var a=monday(new Date(current.getFullYear(),current.getMonth(),1,12));var z=new Date(current.getFullYear(),current.getMonth()+1,0,12);var end=plus(z,(7-z.getDay())%7);var out=[];for(var d=a;d<=end;d=plus(d,1))out.push(d);return out}
