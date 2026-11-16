@@ -51,9 +51,18 @@
 .pdf-icon{font-size:25px;flex:none}.pdf-name{min-width:0;overflow-wrap:anywhere;font-size:13px;font-weight:700}
 .pdf-remove{flex:none;border:1px solid #e0e5ed;color:#8b3440;background:white;padding:9px 12px}
 .pdf-status:empty{display:none}
+
+/* Compte à rebours : visible uniquement pendant les 60 minutes avant la prise de service. */
+.shift-countdown{margin:0 0 10px;background:#172b4d;color:#fff;border-radius:12px;padding:12px 15px;box-shadow:0 2px 9px #0002}
+.shift-countdown-title{font-size:12px;font-weight:700;opacity:.85;margin-bottom:6px}
+.shift-countdown-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #ffffff26;padding:8px 0}
+.shift-countdown-row:first-of-type{border-top:0}
+.shift-countdown-driver{font-size:13px;font-weight:700;min-width:0}
+.shift-countdown-meta{font-size:11px;opacity:.82;margin-top:3px}
+.shift-countdown-time{font-size:clamp(20px,5vw,29px);font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
 </style></head><body>
 <header class="top"><div class="brand"><h1>Planning des Grillos</h1><button id="attButton" class="att-top-button" type="button" title="Planification des congés">ATT</button><button id="quickAddButton" class="add-menu" aria-label="Ajouter ou importer et exporter" title="Ajouter / Importer / Exporter">+</button><select id="driver"><option>Tous</option><option>Arnold</option><option>Patricio</option><option>Dini</option><option>Pablo</option><option>Gonzalo</option></select></div><div class="nav"><div class="menu-wrap"><button id="menuButton">☰</button><div id="menu" class="menu hidden"><button data-view="month">Mois</button><button data-view="week">Semaine</button><button data-view="day">Jour</button></div></div><button id="todayButton" class="today">Aujourd'hui</button><div class="month-navigation"><button id="prevButton" aria-label="Précédent">‹</button><button id="periodButton" type="button" title="Choisir une date"><span id="period" class="period"></span><span id="viewDateLabel" class="view-date-label"></span></button><button id="nextButton" aria-label="Suivant">›</button><div id="navDatePicker" class="nav-date-picker hidden"></div></div></div></header>
-<main><div id="notice" class="notice hidden"></div><div id="swipeArea" class="panel"><div class="weekdays"><span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span></div><div id="calendar" class="calendar"></div></div><section id="agenda"></section></main>
+<main><section id="shiftCountdown" class="shift-countdown hidden" aria-label="Compte à rebours avant la prise de service"><div class="shift-countdown-title">🚌 Début de service dans moins d’une heure</div><div id="shiftCountdownRows"></div></section><div id="notice" class="notice hidden"></div><div id="swipeArea" class="panel"><div class="weekdays"><span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span></div><div id="calendar" class="calendar"></div></div><section id="agenda"></section></main>
 <div id="overlay" class="overlay hidden"><div class="dialog"><div class="dialoghead"><strong id="dialogTitle"></strong><button id="closeButton">✕</button></div><div id="dialogBody" class="dialogbody"></div></div></div>
 <script>
 (function(){
@@ -86,6 +95,28 @@ async function call(name){
  if(!response.ok||(data&&data.ok===false))throw Error(data&&data.error?data.error:'Erreur serveur HTTP '+response.status);
  if(!data||data.ok!==true||!Object.prototype.hasOwnProperty.call(data,'result'))throw Error('Format de réponse API inattendu');
  return data.result;
+}
+// Heure locale du téléphone (Europe/Zurich pour les chauffeurs en Suisse).
+// Uniquement le début de la journée r.start, jamais les tranches suivantes.
+function shiftStartMinutes(value){
+ var match=String(value||'').match(/(?:^|\D)([01]?\d|2[0-3]):([0-5]\d)(?!\d)/);
+ return match?Number(match[1])*60+Number(match[2]):null;
+}
+function updateShiftCountdown(){
+ var panel=$('shiftCountdown'),host=$('shiftCountdownRows');if(!panel||!host)return;
+ var now=new Date(),today=key(now),driver=$('driver').value;
+ var currentSeconds=now.getHours()*3600+now.getMinutes()*60+now.getSeconds();
+ var upcoming=records.filter(function(r){return r.date===today&&(driver==='Tous'||r.driver===driver)})
+ .map(function(r){var m=shiftStartMinutes(r.start);return {r:r,seconds:m===null?null:m*60-currentSeconds}})
+ .filter(function(x){return x.seconds!==null&&x.seconds>0&&x.seconds<=3600})
+ .sort(function(a,b){return a.seconds-b.seconds});
+ if(!upcoming.length){panel.classList.add('hidden');host.innerHTML='';return}
+ host.innerHTML=upcoming.map(function(x){
+  var seconds=x.seconds,h=Math.floor(seconds/3600),m=Math.floor(seconds%3600/60),s=seconds%60;
+  var remaining=[h,m,s].map(function(n){return String(n).padStart(2,'0')}).join(':');
+  return '<div class="shift-countdown-row"><div><div class="shift-countdown-driver">'+esc(x.r.driver)+'</div><div class="shift-countdown-meta">'+esc(x.r.service||'Service')+' · '+esc(x.r.start)+'</div></div><div class="shift-countdown-time" aria-label="Temps restant">'+remaining+'</div></div>';
+ }).join('');
+ panel.classList.remove('hidden');
 }
 function rows(date){var d=$('driver').value;return records.filter(function(r){return r.date===date&&(d==='Tous'||r.driver===d)}).sort(function(a,b){return PEOPLE.indexOf(a.driver)-PEOPLE.indexOf(b.driver)})}
 function dates(){if(view==='day')return [new Date(current)];if(view==='week'){var w=monday(current);return Array.from({length:7},function(_,i){return plus(w,i)})}var a=monday(new Date(current.getFullYear(),current.getMonth(),1,12));var z=new Date(current.getFullYear(),current.getMonth()+1,0,12);var end=plus(z,(7-z.getDay())%7);var out=[];for(var d=a;d<=end;d=plus(d,1))out.push(d);return out}
@@ -130,7 +161,7 @@ function serviceTranches(r){var data=interpreted(r);if(data.segments.length)retu
  return [];
 }
 function trancheText(s){return [s.from,s.start].filter(Boolean).join(' ')+' – '+[s.end,s.to].filter(Boolean).join(' ')}
-function render(){var ds=dates();$('period').textContent=current.toLocaleDateString('fr-CH',{month:'long',year:'numeric'});$('viewDateLabel').textContent=view==='day'?fmt(current):view==='week'?'Semaine du '+european(key(ds[0]))+' au '+european(key(ds[6])):'';document.querySelector('.weekdays').innerHTML=(view==='day'?[current.toLocaleDateString('fr-CH',{weekday:'long'})]:view==='week'?ds.map(function(d){return d.toLocaleDateString('fr-CH',{weekday:'short'})}):['Lun','Mar','Mer','Jeu','Ven','Sam','Dim']).map(function(w){return '<span>'+esc(w)+'</span>'}).join('');$('calendar').style.gridTemplateColumns=view==='day'?'1fr':view==='week'?'repeat(7,minmax(0,1fr))':'repeat(7,minmax(0,1fr))';document.querySelector('.weekdays').style.gridTemplateColumns=view==='day'?'1fr':'repeat(7,minmax(0,1fr))';$('calendar').innerHTML=ds.map(function(d){var k=key(d);var rs=rows(k);var noted=rs.filter(function(r){return realNote(r).trim().length>0});var dots=noted.map(function(r){return '<span class="dot" style="--c:'+COLORS[r.driver]+'"></span>'}).join('');var other=view==='month'&&(d.getMonth()!==current.getMonth()||d.getFullYear()!==current.getFullYear());return '<div class="day '+(other?'other ':'')+(k===key(new Date())?'today ':'')+(k===selected?'selected':'')+'" data-date="'+k+'"><div class="daynum">'+d.getDate()+'</div><div class="dots">'+dots+'</div></div>'}).join('');$('calendar').querySelectorAll('[data-date]').forEach(function(el){el.onclick=function(){selected=el.dataset.date;var d=fromKey(selected);if(view==='month'&&(d.getMonth()!==current.getMonth()||d.getFullYear()!==current.getFullYear()))current=d;if(view==='day'||view==='week')current=d;render()}});var days=ds.filter(function(d){return view!=='month'||(d.getMonth()===current.getMonth()&&d.getFullYear()===current.getFullYear())}).filter(function(d){return key(d)>=selected});$('agenda').innerHTML=days.map(function(d){var rs=rows(key(d));if(!rs.length)return '';return '<div class="agenda-day"><div class="date-title">'+esc(fmt(d))+'</div>'+rs.map(function(r){return '<div class="service" data-id="'+esc(r.id)+'"><span class="stripe" style="--c:'+COLORS[r.driver]+'"></span><span class="service-text">'+esc(r.driver)+' / '+esc(summary(r))+'</span><span>›</span></div>'}).join('')+'</div>'}).join('')||'<div class="empty">'+(loaded?'Aucun service pour cette période.':'Chargement des services…')+'</div>';$('agenda').querySelectorAll('[data-id]').forEach(function(el){el.onclick=function(){detail(el.dataset.id)}})}
+function render(){var ds=dates();$('period').textContent=current.toLocaleDateString('fr-CH',{month:'long',year:'numeric'});$('viewDateLabel').textContent=view==='day'?fmt(current):view==='week'?'Semaine du '+european(key(ds[0]))+' au '+european(key(ds[6])):'';document.querySelector('.weekdays').innerHTML=(view==='day'?[current.toLocaleDateString('fr-CH',{weekday:'long'})]:view==='week'?ds.map(function(d){return d.toLocaleDateString('fr-CH',{weekday:'short'})}):['Lun','Mar','Mer','Jeu','Ven','Sam','Dim']).map(function(w){return '<span>'+esc(w)+'</span>'}).join('');$('calendar').style.gridTemplateColumns=view==='day'?'1fr':view==='week'?'repeat(7,minmax(0,1fr))':'repeat(7,minmax(0,1fr))';document.querySelector('.weekdays').style.gridTemplateColumns=view==='day'?'1fr':'repeat(7,minmax(0,1fr))';$('calendar').innerHTML=ds.map(function(d){var k=key(d);var rs=rows(k);var noted=rs.filter(function(r){return realNote(r).trim().length>0});var dots=noted.map(function(r){return '<span class="dot" style="--c:'+COLORS[r.driver]+'"></span>'}).join('');var other=view==='month'&&(d.getMonth()!==current.getMonth()||d.getFullYear()!==current.getFullYear());return '<div class="day '+(other?'other ':'')+(k===key(new Date())?'today ':'')+(k===selected?'selected':'')+'" data-date="'+k+'"><div class="daynum">'+d.getDate()+'</div><div class="dots">'+dots+'</div></div>'}).join('');$('calendar').querySelectorAll('[data-date]').forEach(function(el){el.onclick=function(){selected=el.dataset.date;var d=fromKey(selected);if(view==='month'&&(d.getMonth()!==current.getMonth()||d.getFullYear()!==current.getFullYear()))current=d;if(view==='day'||view==='week')current=d;render()}});var days=ds.filter(function(d){return view!=='month'||(d.getMonth()===current.getMonth()&&d.getFullYear()===current.getFullYear())}).filter(function(d){return key(d)>=selected});$('agenda').innerHTML=days.map(function(d){var rs=rows(key(d));if(!rs.length)return '';return '<div class="agenda-day"><div class="date-title">'+esc(fmt(d))+'</div>'+rs.map(function(r){return '<div class="service" data-id="'+esc(r.id)+'"><span class="stripe" style="--c:'+COLORS[r.driver]+'"></span><span class="service-text">'+esc(r.driver)+' / '+esc(summary(r))+'</span><span>›</span></div>'}).join('')+'</div>'}).join('')||'<div class="empty">'+(loaded?'Aucun service pour cette période.':'Chargement des services…')+'</div>';$('agenda').querySelectorAll('[data-id]').forEach(function(el){el.onclick=function(){detail(el.dataset.id)}});updateShiftCountdown()}
 function move(n){followToday=false;if(view==='month'){current=new Date(current.getFullYear(),current.getMonth()+n,1,12);var today=new Date();selected=key(current.getMonth()===today.getMonth()&&current.getFullYear()===today.getFullYear()?today:current)}else{current=plus(current,n*(view==='week'?7:1));selected=key(current)}render()}
 function modal(title,html){$('dialogTitle').textContent=title;$('dialogBody').innerHTML=html;$('overlay').classList.remove('hidden')}
 function close(){$('overlay').classList.add('hidden');document.querySelector('.dialog').classList.remove('att-dialog')}
@@ -344,6 +375,7 @@ window.addEventListener('focus',resumeCalendar);
 window.addEventListener('pageshow',resumeCalendar);
 // Verification legere chaque minute; fonctionne aussi apres la veille du telephone.
 setInterval(function(){if(!document.hidden)checkCurrentDay()},60000);
+setInterval(function(){if(!document.hidden)updateShiftCountdown()},1000);
 try{restoreCachedServices();render();refreshServices(!loaded)}catch(e){notice('Erreur JavaScript : '+e.message);console.error(e)}
 })();
 </script></body></html>
