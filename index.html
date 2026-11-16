@@ -65,10 +65,18 @@
 
 /* Choix des horaires : événement indépendant des services */
 .choix-banner{background:#fff3f0;border:1px solid #e7a29b;color:#932a22;border-radius:11px;padding:11px 13px;margin-bottom:10px}.choix-banner b{display:block;font-size:14px}.choix-timer{font-size:24px;font-weight:800;margin-top:5px;font-variant-numeric:tabular-nums}.choix-entry{margin:7px 0;padding:11px;border-left:5px solid var(--choix-color,#2674d0);background:#f5f8ff;border-radius:7px;cursor:pointer}.choix-entry strong{color:#172b45}.choix-form label{display:block;font-size:13px;font-weight:bold;margin:10px 0}.choix-form input,.choix-form select{display:block;width:100%;padding:10px;margin-top:5px;border:1px solid #cbd5e1;border-radius:8px}
+
+.birthday-banner{margin:0 0 12px;padding:12px 16px;border-radius:12px;background:#fff5db;color:#583c09;border:1px solid #e9c975;font-weight:700;text-align:center}
+.birthday-popup{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.55);padding:18px}
+.birthday-popup.hidden{display:none}
+.birthday-popup-card{max-width:430px;width:100%;padding:30px 20px;border-radius:18px;background:white;color:#28374c;text-align:center;box-shadow:0 12px 50px #0005}
+.birthday-popup-card .birthday-emoji{font-size:44px;margin-bottom:12px}
+.birthday-popup-card strong{display:block;font-size:23px;line-height:1.35}
 </style></head><body>
 <header class="top"><div class="brand"><h1>Planning des Grillos</h1><button id="attButton" class="att-top-button" type="button" title="Planification des congés">ATT</button><button id="quickAddButton" class="add-menu" aria-label="Ajouter ou importer et exporter" title="Ajouter / Importer / Exporter">+</button><select id="driver"><option>Tous</option><option>Arnold</option><option>Patricio</option><option>Dini</option><option>Pablo</option><option>Gonzalo</option></select></div><div class="nav"><div class="menu-wrap"><button id="menuButton">☰</button><div id="menu" class="menu hidden"><button data-view="month">Mois</button><button data-view="week">Semaine</button><button data-view="day">Jour</button></div></div><button id="todayButton" class="today">Aujourd'hui</button><div class="month-navigation"><button id="prevButton" aria-label="Précédent">‹</button><button id="periodButton" type="button" title="Choisir une date"><span id="period" class="period"></span><span id="viewDateLabel" class="view-date-label"></span></button><button id="nextButton" aria-label="Suivant">›</button><div id="navDatePicker" class="nav-date-picker hidden"></div></div></div></header>
-<main><section id="choixBanner" class="choix-banner hidden"></section><section id="shiftCountdown" class="shift-countdown hidden" aria-label="Compte à rebours avant la prise de service"><div class="shift-countdown-title">🚌 Début de service dans moins d’une heure</div><div id="shiftCountdownRows"></div></section><div id="notice" class="notice hidden"></div><div id="swipeArea" class="panel"><div class="weekdays"><span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span></div><div id="calendar" class="calendar"></div></div><section id="agenda"></section></main>
+<main><section id="birthdayBanner" class="birthday-banner hidden" aria-live="polite"></section><section id="choixBanner" class="choix-banner hidden"></section><section id="shiftCountdown" class="shift-countdown hidden" aria-label="Compte à rebours avant la prise de service"><div class="shift-countdown-title">🚌 Début de service dans moins d’une heure</div><div id="shiftCountdownRows"></div></section><div id="notice" class="notice hidden"></div><div id="swipeArea" class="panel"><div class="weekdays"><span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span></div><div id="calendar" class="calendar"></div></div><section id="agenda"></section></main>
 <div id="overlay" class="overlay hidden"><div class="dialog"><div class="dialoghead"><strong id="dialogTitle"></strong><button id="closeButton">✕</button></div><div id="dialogBody" class="dialogbody"></div></div></div>
+<div id="birthdayPopup" class="birthday-popup hidden" role="dialog" aria-label="Feliz cumpleaños"><div class="birthday-popup-card"><div class="birthday-emoji">🎉🎂🎈</div><strong id="birthdayPopupText"></strong></div></div>
 <script>
 (function(){
 'use strict';
@@ -415,9 +423,41 @@ function checkCurrentDay(){
  var previous=lastKnownDay;lastKnownDay=today;
  if(followToday&&selected===previous){current=new Date();selected=today;render()}
 }
+// Anniversaires visibles pour tous les chauffeurs, quel que soit le filtre actif.
+// L'année de naissance est inconnue pour Dini et Gonzalo.
+var BIRTHDAYS=[
+ {name:'Arnold',day:12,month:10,year:1972},
+ {name:'Patricio',day:15,month:12,year:1962},
+ {name:'Pablo',day:29,month:9,year:1982},
+ {name:'Dini',day:18,month:4,year:null},
+ {name:'Gonzalo',day:22,month:8,year:null}
+];
+var birthdayPopupTimeout=null;
+function birthdayMessage(person,year){
+ return '¡Feliz cumpleaños, '+person.name+'!'+(person.year?' Hoy cumples '+(year-person.year)+' años.':'');
+}
+function updateBirthdays(){
+ var now=new Date(),year=now.getFullYear(),today=[];
+ for(var i=0;i<BIRTHDAYS.length;i++)if(BIRTHDAYS[i].day===now.getDate()&&BIRTHDAYS[i].month===now.getMonth()+1)today.push(BIRTHDAYS[i]);
+ var banner=$('birthdayBanner'),popup=$('birthdayPopup');
+ if(!today.length){banner.classList.add('hidden');popup.classList.add('hidden');return}
+ var messages=today.map(function(person){return birthdayMessage(person,year)});
+ banner.textContent='🎉 '+messages.join(' 🎂 ');
+ banner.classList.remove('hidden');
+ var storageKey='grillos_birthday_shown_'+key(now);
+ var alreadyShown=false;
+ try{alreadyShown=localStorage.getItem(storageKey)==='1'}catch(e){}
+ if(alreadyShown||!popup.classList.contains('hidden'))return;
+ try{localStorage.setItem(storageKey,'1')}catch(e){}
+ $('birthdayPopupText').textContent=messages.join(' 🎂 ');
+ popup.classList.remove('hidden');
+ if(birthdayPopupTimeout)clearTimeout(birthdayPopupTimeout);
+ birthdayPopupTimeout=setTimeout(function(){popup.classList.add('hidden')},3000);
+}
 function resumeCalendar(){
  if(document.hidden)return;
  checkCurrentDay();
+ updateBirthdays();
  // Evite les requetes repetees quand on bascule rapidement entre applications.
  if(Date.now()-lastSync>30000){refreshServices(false);choixLoad();}
 }
@@ -425,8 +465,8 @@ document.addEventListener('visibilitychange',resumeCalendar);
 window.addEventListener('focus',resumeCalendar);
 window.addEventListener('pageshow',resumeCalendar);
 // Verification legere chaque minute; fonctionne aussi apres la veille du telephone.
-setInterval(function(){if(!document.hidden)checkCurrentDay()},60000);
+setInterval(function(){if(!document.hidden){checkCurrentDay();updateBirthdays()}},60000);
 setInterval(function(){if(!document.hidden){updateShiftCountdown();choixBannerUpdate()}},1000);
-try{restoreCachedServices();render();refreshServices(!loaded);choixLoad()}catch(e){notice('Erreur JavaScript : '+e.message);console.error(e)}
+try{restoreCachedServices();render();updateBirthdays();refreshServices(!loaded);choixLoad()}catch(e){notice('Erreur JavaScript : '+e.message);console.error(e)}
 })();
 </script></body></html>
