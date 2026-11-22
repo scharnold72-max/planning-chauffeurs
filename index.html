@@ -434,20 +434,23 @@ html[data-theme="dark"] #liveTimers .shift-countdown{background:#1c345a;color:#e
 html[data-theme="dark"] #liveTimers .break-countdown{background:#153957;color:#e8f6ff}
 @media(max-width:520px){#liveTimers .shift-countdown,#liveTimers .break-countdown{padding:3px 8px}#liveTimers .shift-countdown-row{gap:6px;min-height:35px}#liveTimers .timer-symbol{width:17px;font-size:14px}#liveTimers .shift-countdown-driver{font-size:12px}#liveTimers .shift-countdown-meta{font-size:11px}#liveTimers .shift-countdown-time{font-size:17px}}
 
-/* Les minuteurs restent ancrés sous le calendrier pendant le défilement. */
-:root{--grillos-calendar-height:0px}
-#liveTimers{
-  position:sticky!important;
-  top:calc(var(--grillos-sticky-top) + var(--grillos-calendar-height) + 12px)!important;
-  z-index:24!important;
-  max-width:100%;
-  margin-top:0!important;
-  margin-bottom:10px!important;
-  background:transparent;
+/* Minuteurs intégrés au panneau calendrier : hauteur dynamique et aucune superposition. */
+#swipeArea{background:#fff;isolation:isolate;overflow:visible}
+html[data-theme="dark"] #swipeArea{background:#1b293e}
+#swipeArea #liveTimers{
+  position:static!important;
+  top:auto!important;
+  z-index:auto!important;
+  width:100%;max-width:100%;
+  margin:8px 0 0!important;
+  padding:0!important;
+  background:transparent!important;
 }
-#liveTimers .shift-countdown,#liveTimers .break-countdown{
-  box-shadow:0 4px 13px rgba(0,0,0,.22);
-}
+#swipeArea #liveTimers.no-active-timers{display:none!important}
+#swipeArea #liveTimers .shift-countdown,
+#swipeArea #liveTimers .break-countdown{margin:0 0 5px!important;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+#swipeArea #liveTimers .break-countdown:last-child,
+#swipeArea #liveTimers .shift-countdown:last-child{margin-bottom:0!important}
 
 </style></head><body>
 <header class="top">
@@ -464,7 +467,7 @@ html[data-theme="dark"] #liveTimers .break-countdown{background:#153957;color:#e
     <div class="nav compact-nav"><button id="todayButton" class="today" type="button">Aujourd'hui</button><div class="month-navigation"><button id="prevButton" type="button" aria-label="Précédent">‹</button><button id="periodButton" type="button" title="Choisir un mois" aria-expanded="false"><span class="month-title"><span id="period" class="period"></span><span class="month-caret">⌄</span></span><span id="viewDateLabel" class="view-date-label"></span></button><button id="nextButton" type="button" aria-label="Suivant">›</button><div id="navDatePicker" class="nav-date-picker hidden"></div></div><div class="menu-wrap dropdown-wrap"><button id="menuButton" class="header-control" type="button" aria-expanded="false" aria-controls="menu"><span aria-hidden="true">☰</span><span>Vue</span><span class="dropdown-caret" aria-hidden="true">⌄</span></button><div id="menu" class="header-dropdown hidden"><button data-view="day">Jour</button><button data-view="week">Semaine</button><button data-view="month">Mois</button></div></div></div>
   </div>
 </header>
-<main><section id="birthdayBanner" class="birthday-banner hidden" aria-live="polite"></section><section id="choixBanner" class="choix-banner hidden"></section><div id="notice" class="notice hidden"></div><div id="swipeArea" class="panel"><div class="weekdays"><span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span></div><div id="calendar" class="calendar"></div></div><div id="liveTimers" aria-label="Comptes à rebours actifs"><section id="shiftCountdown" class="shift-countdown hidden" aria-label="Départs de service à venir"><div id="shiftCountdownRows"></div></section><section id="breakCountdown" class="break-countdown hidden" aria-label="Temps restant de pause" aria-live="off"><div id="breakCountdownRows"></div></section></div><section id="agenda"></section></main>
+<main><section id="birthdayBanner" class="birthday-banner hidden" aria-live="polite"></section><section id="choixBanner" class="choix-banner hidden"></section><div id="notice" class="notice hidden"></div><div id="swipeArea" class="panel"><div class="weekdays"><span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span></div><div id="calendar" class="calendar"></div><div id="liveTimers" class="no-active-timers" aria-label="Comptes à rebours actifs"><section id="shiftCountdown" class="shift-countdown hidden" aria-label="Départs de service à venir"><div id="shiftCountdownRows"></div></section><section id="breakCountdown" class="break-countdown hidden" aria-label="Temps restant de pause" aria-live="off"><div id="breakCountdownRows"></div></section></div></div><section id="agenda"></section></main>
 <div id="overlay" class="overlay hidden"><div class="dialog"><div class="dialoghead"><strong id="dialogTitle"></strong><button id="closeButton">✕</button></div><div id="dialogBody" class="dialogbody"></div></div></div>
 <div id="birthdayPopup" class="birthday-popup hidden" role="dialog" aria-label="Feliz cumpleaños"><div class="birthday-popup-card"><div class="birthday-emoji">🎉🎂🎈</div><strong id="birthdayPopupText"></strong></div></div>
 <script>
@@ -756,15 +759,23 @@ function render(){
  }).join('')||'<div class="empty">'+(loaded?'Aucun service pour cette période.':'Chargement des services…')+'</div>';
  $('agenda').querySelectorAll('[data-choix]').forEach(function(el){el.onclick=function(){choixOpen(el.getAttribute('data-choix'))}});
  $('agenda').querySelectorAll('[data-id]').forEach(function(el){el.onclick=function(){detail(el.dataset.id)}});
- updateShiftCountdown();updateBreakCountdown();choixBannerUpdate();
+ updateShiftCountdown();updateBreakCountdown();synchronizeTimerPanel();choixBannerUpdate();
 }
 
 function move(n){followToday=false;if(view==='month'){current=new Date(current.getFullYear(),current.getMonth()+n,1,12);var today=new Date();selected=key(current.getMonth()===today.getMonth()&&current.getFullYear()===today.getFullYear()?today:current)}else{current=plus(current,n*(view==='week'?7:1));selected=key(current)}render()}
+function synchronizeTimerPanel(){
+ var panel=$('liveTimers'),shift=$('shiftCountdown'),pause=$('breakCountdown');
+ if(!panel||!shift||!pause)return;
+ panel.classList.toggle('no-active-timers',shift.classList.contains('hidden')&&pause.classList.contains('hidden'));
+}
+if(window.MutationObserver){
+ var timerWatcher=new MutationObserver(synchronizeTimerPanel);
+ ['shiftCountdown','breakCountdown'].forEach(function(id){var el=$(id);if(el)timerWatcher.observe(el,{attributes:true,attributeFilter:['class']})});
+}
 function updateStickyTop(){
  var header=document.querySelector('header.top'),calendar=document.getElementById('swipeArea');
  if(!header||!calendar)return;
  document.documentElement.style.setProperty('--grillos-sticky-top',Math.ceil(header.getBoundingClientRect().height)+'px');
- document.documentElement.style.setProperty('--grillos-calendar-height',Math.ceil(calendar.getBoundingClientRect().height)+'px');
 }
 window.addEventListener('resize',updateStickyTop);
 window.addEventListener('orientationchange',updateStickyTop);
