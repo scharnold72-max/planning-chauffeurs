@@ -185,21 +185,46 @@ html[data-theme="dark"] .header-inner .nav .today{background:#26456b;border-colo
  .header-toolbar .driver-control{width:100px;max-width:100px}
  .header-inner .nav{margin-top:13px}
 }
-@media(max-width:420px){
+@media(max-width:520px){
  .top{padding:12px 12px 14px}
+ .header-toolbar{gap:8px;align-items:center}
+ .brand-logo{order:1;flex:1 1 calc(100% - 98px);min-width:0;margin:0}
+ .settings-wrap{order:2;flex:none}
+ .theme-wrap{order:3;flex:none}
+ .plan-wrap{order:4;flex:none}
+ #driver{order:5;flex:none}
+ .menu-wrap{order:6;flex:none}
  .brand-logo img{height:34px;width:34px}
- .brand-logo h1{font-size:15px}
- .header-toolbar{gap:7px}
- .header-control,.header-toolbar .driver-control{font-size:12px;height:38px;min-height:38px;padding:0 8px;gap:5px}
- .header-control.icon-only{height:38px;min-width:38px;width:38px;font-size:18px}
- .header-toolbar .driver-control{width:91px;max-width:91px}
- .header-inner .nav{gap:8px}
- .header-inner .nav .today{font-size:12px;min-height:38px;height:38px;padding:8px 9px}
- .header-inner .month-navigation{gap:3px}
- .header-inner .month-navigation>button:not(#periodButton){min-width:29px;height:38px;min-height:38px;padding:2px 6px}
- .header-inner #periodButton{min-width:0;padding:2px 4px}
+ .brand-logo h1{font-size:15px;white-space:normal;line-height:1.15}
+ .header-control,.header-toolbar .driver-control{font-size:12.5px;height:38px;min-height:38px;padding:0 9px;gap:5px;border-radius:10px}
+ .header-control.icon-only{height:38px;min-width:38px;width:38px;font-size:18px;padding:0}
+ #attButton{padding:0 11px}
+ #driver{width:90px;max-width:90px;padding-right:4px}
+ #menuButton{padding:0 10px}
+ .header-inner .nav{gap:8px;align-items:center;margin-top:12px}
+ .header-inner .nav .today{font-size:12px;min-height:38px;height:38px;padding:8px 10px}
+ .header-inner .month-navigation{gap:4px}
+ .header-inner .month-navigation>button:not(#periodButton){min-width:30px;height:38px;min-height:38px;padding:2px 7px}
+ .header-inner #periodButton{min-width:0;padding:2px 6px;flex:1}
  .header-inner #periodButton .period{font-size:clamp(14px,4.2vw,18px)}
+ .view-date-label{display:none}
  .month-caret{font-size:14px}
+ .header-dropdown{top:44px;max-width:calc(100vw - 24px)}
+ .plan-wrap .header-dropdown{left:0;right:auto;min-width:min(270px,calc(100vw - 24px))}
+ .settings-wrap .header-dropdown{right:0;left:auto;min-width:190px}
+ .theme-wrap .theme-popup{right:0;left:auto;width:172px;max-width:calc(100vw - 24px)}
+}
+@media(max-width:380px){
+ .header-toolbar{gap:6px}
+ .brand-logo{flex-basis:calc(100% - 92px)}
+ .brand-logo h1{font-size:14px}
+ .header-control,.header-toolbar .driver-control{font-size:12px;padding:0 8px}
+ #attButton{padding:0 9px}
+ #driver{width:84px;max-width:84px}
+ #menuButton{padding:0 9px}
+ .header-inner .nav .today{font-size:11.5px;padding:8px 8px}
+ .header-inner .month-navigation>button:not(#periodButton){min-width:28px;padding:2px 5px}
+ .header-inner #periodButton .period{font-size:clamp(13px,4vw,17px)}
 }
 </style></head><body>
 <header class="top">
