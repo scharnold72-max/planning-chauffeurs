@@ -416,6 +416,23 @@ html[data-theme="dark"] .service{background:#213149!important;border:1px solid #
 .top .header-dropdown,.top .theme-wrap .theme-popup{left:var(--grillos-menu-x,12px)!important;top:var(--grillos-menu-y,50px)!important;right:auto!important;width:var(--grillos-menu-w,190px)!important}
 /* Le contour de la barre est identique à la largeur du calendrier sur PC. */
 .top .header-inner{max-width:1000px!important}
+
+/* Minuteurs compacts sous le calendrier, sur une seule ligne par chauffeur. */
+#liveTimers{max-width:100%;margin:0 0 10px;position:relative;z-index:1}
+#liveTimers .shift-countdown,#liveTimers .break-countdown{margin:0 0 5px;padding:4px 11px;background:#172b4d;border:1px solid #324f79;border-radius:10px;box-shadow:0 2px 8px #0002;color:#fff}
+#liveTimers .break-countdown{background:#164a72;border-color:#30628a}
+#liveTimers .shift-countdown-row{display:flex;align-items:center;gap:9px;min-width:0;min-height:39px;padding:5px 0;border-top:1px solid #ffffff26;white-space:nowrap}
+#liveTimers .shift-countdown-row:first-child{border-top:0}
+#liveTimers .timer-symbol{font-size:17px;line-height:1;flex:none;width:22px;text-align:center}
+#liveTimers .shift-countdown-driver{font-size:13px;flex:0 0 auto;line-height:1.2;min-width:0}
+#liveTimers .shift-countdown-meta{font-size:12px;flex:1 1 auto;min-width:0;margin:0;opacity:.92;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#liveTimers .shift-countdown-time{font-size:clamp(17px,3.3vw,23px);flex:none;margin-left:auto;line-height:1.15;letter-spacing:.15px;font-variant-numeric:tabular-nums}
+html[data-theme="light"] #liveTimers .shift-countdown{background:#e5f0ff;color:#153861;border-color:#b5d2fb}
+html[data-theme="light"] #liveTimers .break-countdown{background:#ddf3ff;color:#135174;border-color:#b0dbef}
+html[data-theme="light"] #liveTimers .shift-countdown-row{border-top-color:#163e6b22}
+html[data-theme="dark"] #liveTimers .shift-countdown{background:#1c345a;color:#eff6ff}
+html[data-theme="dark"] #liveTimers .break-countdown{background:#153957;color:#e8f6ff}
+@media(max-width:520px){#liveTimers .shift-countdown,#liveTimers .break-countdown{padding:3px 8px}#liveTimers .shift-countdown-row{gap:6px;min-height:35px}#liveTimers .timer-symbol{width:17px;font-size:14px}#liveTimers .shift-countdown-driver{font-size:12px}#liveTimers .shift-countdown-meta{font-size:11px}#liveTimers .shift-countdown-time{font-size:17px}}
 </style></head><body>
 <header class="top">
   <div class="header-inner app-shell">
@@ -431,7 +448,7 @@ html[data-theme="dark"] .service{background:#213149!important;border:1px solid #
     <div class="nav compact-nav"><button id="todayButton" class="today" type="button">Aujourd'hui</button><div class="month-navigation"><button id="prevButton" type="button" aria-label="Précédent">‹</button><button id="periodButton" type="button" title="Choisir un mois" aria-expanded="false"><span class="month-title"><span id="period" class="period"></span><span class="month-caret">⌄</span></span><span id="viewDateLabel" class="view-date-label"></span></button><button id="nextButton" type="button" aria-label="Suivant">›</button><div id="navDatePicker" class="nav-date-picker hidden"></div></div><div class="menu-wrap dropdown-wrap"><button id="menuButton" class="header-control" type="button" aria-expanded="false" aria-controls="menu"><span aria-hidden="true">☰</span><span>Vue</span><span class="dropdown-caret" aria-hidden="true">⌄</span></button><div id="menu" class="header-dropdown hidden"><button data-view="day">Jour</button><button data-view="week">Semaine</button><button data-view="month">Mois</button></div></div></div>
   </div>
 </header>
-<main><section id="birthdayBanner" class="birthday-banner hidden" aria-live="polite"></section><section id="choixBanner" class="choix-banner hidden"></section><section id="shiftCountdown" class="shift-countdown hidden" aria-label="Compte à rebours avant la prise de service"><div class="shift-countdown-title">🚌 Début de service dans moins d’une heure</div><div id="shiftCountdownRows"></div></section><section id="breakCountdown" class="break-countdown hidden" aria-label="Temps restant avant la prochaine tranche" aria-live="off"><div class="shift-countdown-title">☕ Pause en cours · Prochaine tranche</div><div id="breakCountdownRows"></div></section><div id="notice" class="notice hidden"></div><div id="swipeArea" class="panel"><div class="weekdays"><span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span></div><div id="calendar" class="calendar"></div></div><section id="agenda"></section></main>
+<main><section id="birthdayBanner" class="birthday-banner hidden" aria-live="polite"></section><section id="choixBanner" class="choix-banner hidden"></section><div id="notice" class="notice hidden"></div><div id="swipeArea" class="panel"><div class="weekdays"><span>Lun</span><span>Mar</span><span>Mer</span><span>Jeu</span><span>Ven</span><span>Sam</span><span>Dim</span></div><div id="calendar" class="calendar"></div></div><div id="liveTimers" aria-label="Comptes à rebours actifs"><section id="shiftCountdown" class="shift-countdown hidden" aria-label="Départs de service à venir"><div id="shiftCountdownRows"></div></section><section id="breakCountdown" class="break-countdown hidden" aria-label="Temps restant de pause" aria-live="off"><div id="breakCountdownRows"></div></section></div><section id="agenda"></section></main>
 <div id="overlay" class="overlay hidden"><div class="dialog"><div class="dialoghead"><strong id="dialogTitle"></strong><button id="closeButton">✕</button></div><div id="dialogBody" class="dialogbody"></div></div></div>
 <div id="birthdayPopup" class="birthday-popup hidden" role="dialog" aria-label="Feliz cumpleaños"><div class="birthday-popup-card"><div class="birthday-emoji">🎉🎂🎈</div><strong id="birthdayPopupText"></strong></div></div>
 <script>
@@ -513,7 +530,7 @@ function updateShiftCountdown(){
  host.innerHTML=upcoming.map(function(x){
   var seconds=x.seconds,h=Math.floor(seconds/3600),m=Math.floor(seconds%3600/60),s=seconds%60;
   var remaining=[h,m,s].map(function(n){return String(n).padStart(2,'0')}).join(':');
-  return '<div class="shift-countdown-row"><div><div class="shift-countdown-driver">'+esc(x.r.driver)+'</div><div class="shift-countdown-meta">'+esc(x.r.service||'Service')+' · '+esc(x.r.start)+'</div></div><div class="shift-countdown-time" aria-label="Temps restant">'+remaining+'</div></div>';
+  return '<div class="shift-countdown-row"><span class="timer-symbol" aria-hidden="true">🚌</span><strong class="shift-countdown-driver">'+esc(x.r.driver)+'</strong><span class="shift-countdown-meta" title="'+esc((x.r.service||'Service')+' · '+x.r.start)+'">'+esc(x.r.service||'Service')+' · '+esc(x.r.start)+'</span><strong class="shift-countdown-time" aria-label="Temps restant">'+remaining+'</strong></div>';
  }).join('');
  panel.classList.remove('hidden');
 }
@@ -564,7 +581,7 @@ function updateBreakCountdown(){
   var sec=x.seconds,h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;
   var remaining=[h,m,s].map(function(n){return String(n).padStart(2,'0')}).join(':');
   var start=x.b.segment.start;
-  return '<div class="shift-countdown-row"><div><div class="shift-countdown-driver">'+esc(x.r.driver)+' · Pause '+x.b.from+' → Tranche '+x.b.to+'</div><div class="shift-countdown-meta">Prochaine prise de service à '+esc(start)+' · '+esc(x.b.segment.from||'')+'</div></div><div class="shift-countdown-time" aria-label="Temps de pause restant">'+remaining+'</div></div>';
+  return '<div class="shift-countdown-row"><span class="timer-symbol" aria-hidden="true">☕</span><strong class="shift-countdown-driver">'+esc(x.r.driver)+'</strong><span class="shift-countdown-meta" title="'+esc('Tranche '+x.b.to+' · '+(x.b.segment.from||'')+' '+start)+'">'+esc(x.b.segment.from||'Tranche '+x.b.to)+' · '+esc(start)+'</span><strong class="shift-countdown-time" aria-label="Temps de pause restant">'+remaining+'</strong></div>';
  }).join('');
  panel.classList.remove('hidden');
 }
