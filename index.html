@@ -563,4 +563,14 @@ setInterval(function(){if(!document.hidden){checkCurrentDay();updateBirthdays()}
 setInterval(function(){if(!document.hidden){updateShiftCountdown();updateBreakCountdown();choixBannerUpdate()}},1000);
 try{restoreCachedServices();render();updateBirthdays();refreshServices(!loaded);choixLoad()}catch(e){notice('Erreur JavaScript : '+e.message);console.error(e)}
 })();
-</script></body></html>
+</script><script>
+// Enregistrement du Service Worker pour installation PWA.
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    navigator.serviceWorker.register('./sw.js', {scope: './'}).catch(function(err) {
+      console.warn('Service Worker non enregistré :', err);
+    });
+  });
+}
+</script>
+</body></html>
