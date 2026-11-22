@@ -226,12 +226,103 @@ html[data-theme="dark"] .header-inner .nav .today{background:#26456b;border-colo
  .header-inner .month-navigation>button:not(#periodButton){min-width:28px;padding:2px 5px}
  .header-inner #periodButton .period{font-size:clamp(13px,4vw,17px)}
 }
+
+/* V5: BARRE COMPACTE ET ADAPTATIVE - 2 rangées maximum */
+.top{padding:10px 14px 12px!important;background:#172b4d}
+.header-inner{max-width:1000px;width:100%;margin:0 auto}
+.header-toolbar{display:flex!important;align-items:center;flex-wrap:nowrap!important;justify-content:space-between;gap:7px!important;min-width:0}
+.brand-logo{order:0!important;flex:0 1 auto!important;min-width:0!important;margin:0!important;gap:7px!important}
+.brand-logo img{width:32px!important;height:32px!important;border-radius:9px}
+.brand-logo h1{font-size:13px!important;white-space:nowrap!important;letter-spacing:0;font-weight:750}
+.header-control,.header-toolbar .driver-control{height:34px!important;min-height:34px!important;border-radius:9px!important;font-size:12px!important;font-weight:650;padding:0 9px!important;gap:5px!important;box-shadow:none}
+.header-control.icon-only{width:34px!important;min-width:34px!important;height:34px!important;padding:0!important;font-size:17px!important}
+.plan-wrap{order:1!important;flex:none}
+.header-toolbar #driver{order:2!important;flex:none;width:85px!important;max-width:85px!important;padding-left:8px!important;padding-right:3px!important}
+.header-toolbar .menu-wrap{order:3!important;flex:none}
+.header-toolbar .settings-wrap{order:4!important;flex:none}
+.header-toolbar .theme-wrap{order:5!important;flex:none}
+.dropdown-caret{font-size:13px!important}
+.header-inner .nav{margin-top:8px!important;gap:8px!important;min-width:0}
+.header-inner .nav .today{height:33px!important;min-height:33px!important;font-size:12px!important;padding:5px 9px!important;margin:0!important}
+.header-inner .month-navigation{gap:5px!important;min-width:0}
+.header-inner .month-navigation>button:not(#periodButton){width:33px!important;min-width:33px!important;height:33px!important;min-height:33px!important;padding:2px!important;font-size:20px!important}
+.header-inner #periodButton{min-width:0!important;flex:0 1 auto!important;padding:2px 5px!important;max-width:100%}
+.header-inner #periodButton .period{font-size:clamp(13px,2.5vw,16px)!important;line-height:1.15}
+.month-title{gap:5px!important;white-space:nowrap}
+.header-inner .view-date-label{font-size:10px!important}
+.header-dropdown{max-width:calc(100vw - 24px)!important}
+.plan-wrap .header-dropdown{left:0!important;right:auto!important;min-width:min(270px,calc(100vw - 24px))!important}
+.settings-wrap .header-dropdown{right:0!important;left:auto!important}
+.theme-wrap .theme-popup{right:0!important;left:auto!important;width:175px!important;max-width:calc(100vw - 24px)!important}
+/* Journées visuellement distinctes, calendrier en relief comme la maquette */
+.agenda-day{border-radius:15px;box-shadow:0 5px 16px rgba(25,64,116,.11);padding:11px}
+.date-title{display:flex;align-items:center;gap:11px;margin:0 0 11px!important;padding:12px 14px!important;border-radius:12px!important;background:linear-gradient(115deg,#dceaff 0%,#b8d5ff 100%)!important;border:1px solid #accbf6!important;box-shadow:inset 0 1px rgba(255,255,255,.8),0 3px 9px rgba(29,83,165,.13);color:#123a73!important;font-size:clamp(14px,1.8vw,17px)!important;font-weight:800!important;text-transform:capitalize}
+.day-title-icon{width:27px;height:27px;min-width:27px;display:inline-flex;align-items:center;justify-content:center;color:#1550a0}
+.day-title-icon svg{width:24px;height:24px}
+.day-title-copy{min-width:0;line-height:1.3}
+.date-title.sat-tone{background:linear-gradient(115deg,#e0f5df,#b8e5be)!important;color:#175435!important;border-color:#a7d6af!important}
+.date-title.sun-tone{background:linear-gradient(115deg,#ffe7e9,#f8c5ce)!important;color:#7f2740!important;border-color:#efb7c1!important}
+.date-title.holiday-tone{background:linear-gradient(115deg,#fff3bf,#ffdb7a)!important;color:#76520b!important;border-color:#e9c76f!important}
+.date-title.school-tone{background:linear-gradient(115deg,#f0f3f8,#dce3ec)!important;color:#344966!important;border-color:#cbd5e2!important}
+.date-title.sat-tone .day-title-icon{color:#26764c}.date-title.sun-tone .day-title-icon{color:#9a3a54}.date-title.holiday-tone .day-title-icon{color:#9b6b17}.date-title.school-tone .day-title-icon{color:#55677f}
+.date-title .muted{color:inherit!important;opacity:.75;font-weight:600;font-size:11px}
+html[data-theme="dark"] .date-title{background:linear-gradient(115deg,#245ca6,#394bd4)!important;border-color:#4d83e0!important;color:#fff!important;box-shadow:inset 0 1px rgba(255,255,255,.16),0 4px 12px rgba(0,0,0,.25)}
+html[data-theme="dark"] .date-title .day-title-icon{color:#dbeaff}
+html[data-theme="dark"] .date-title.sat-tone{background:linear-gradient(115deg,#254f40,#307253)!important;border-color:#498b68!important;color:#e4fff0!important}
+html[data-theme="dark"] .date-title.sun-tone{background:linear-gradient(115deg,#623442,#80414f)!important;border-color:#98576a!important;color:#ffe5eb!important}
+html[data-theme="dark"] .date-title.holiday-tone{background:linear-gradient(115deg,#6b541e,#98752b)!important;border-color:#b2903b!important;color:#fff1ba!important}
+html[data-theme="dark"] .date-title.school-tone{background:linear-gradient(115deg,#343f50,#536074)!important;border-color:#627187!important;color:#f1f5fc!important}
+html[data-theme="dark"] .date-title.sat-tone .day-title-icon,html[data-theme="dark"] .date-title.sun-tone .day-title-icon,html[data-theme="dark"] .date-title.holiday-tone .day-title-icon,html[data-theme="dark"] .date-title.school-tone .day-title-icon{color:inherit}
+@media(max-width:650px){
+ .top{padding:9px 10px 11px!important}
+ .header-toolbar{gap:5px!important}
+ .brand-logo{gap:4px!important}
+ .brand-logo img{width:29px!important;height:29px!important}
+ .brand-logo h1{font-size:12px!important}
+ .header-control,.header-toolbar .driver-control{height:32px!important;min-height:32px!important;font-size:11px!important;padding:0 6px!important;gap:3px!important}
+ .header-control.icon-only{height:32px!important;min-width:30px!important;width:30px!important;font-size:16px!important}
+ .header-toolbar #driver{width:65px!important;max-width:65px!important;padding:0 2px!important}
+ #attButton{padding:0 5px!important}
+ #menuButton{padding:0 5px!important}
+ .dropdown-caret{font-size:11px!important}
+ .header-inner .nav{margin-top:8px!important;gap:5px!important}
+ .header-inner .nav .today{height:32px!important;min-height:32px!important;font-size:11px!important;padding:5px 6px!important}
+ .header-inner .month-navigation{gap:3px!important}
+ .header-inner .month-navigation>button:not(#periodButton){height:32px!important;min-height:32px!important;width:29px!important;min-width:29px!important;font-size:19px!important}
+ .header-inner #periodButton .period{font-size:14px!important}
+ .header-inner .view-date-label{display:none!important}
+ .date-title{padding:10px 11px!important;gap:8px;font-size:15px!important}
+ .day-title-icon{width:24px;height:24px;min-width:24px}
+ .day-title-icon svg{width:21px;height:21px}
+}
+@media(max-width:370px){
+ .brand-logo h1{font-size:11px!important}
+ .brand-logo img{width:25px!important;height:25px!important}
+ .header-toolbar{gap:3px!important}
+ .header-control,.header-toolbar .driver-control{font-size:10px!important;padding:0 4px!important;gap:2px!important}
+ .header-control.icon-only{width:28px!important;min-width:28px!important}
+ .header-toolbar #driver{width:57px!important;max-width:57px!important}
+ .header-inner .nav .today{font-size:10px!important;padding:4px!important}
+ .header-inner #periodButton .period{font-size:12px!important}
+}
+
+
+@media(max-width:420px){
+ .header-toolbar{gap:3px!important}
+ .brand-logo img{width:26px!important;height:26px!important}
+ .brand-logo h1{font-size:11px!important}
+ .brand-logo{gap:3px!important}
+ .header-control,.header-toolbar .driver-control{font-size:10.5px!important;padding:0 4px!important;gap:2px!important}
+ .header-control.icon-only{width:28px!important;min-width:28px!important}
+ .header-toolbar #driver{width:59px!important;max-width:59px!important}
+ .dropdown-caret{font-size:10px!important}
+}
 </style></head><body>
 <header class="top">
   <div class="header-inner">
     <div class="header-toolbar">
-      <div class="brand-logo"><img src="icon-64.png" alt="Trolleybus TL"><h1>Planning des Grillos</h1></div>
-      <div class="plan-wrap dropdown-wrap"><button id="attButton" class="header-control" type="button" aria-expanded="false" aria-controls="planMenu" title="Planification ATT"><span aria-hidden="true">📅</span><span>Planification ATT</span><span class="dropdown-caret" aria-hidden="true">⌄</span></button>
+      <div class="brand-logo"><img src="icon-64.png" alt="Trolleybus TL"><h1>Planning</h1></div>
+      <div class="plan-wrap dropdown-wrap"><button id="attButton" class="header-control" type="button" aria-expanded="false" aria-controls="planMenu" title="Planification ATT"><span aria-hidden="true">📅</span><span>Planification</span><span class="dropdown-caret" aria-hidden="true">⌄</span></button>
         <div id="planMenu" class="header-dropdown hidden"><button id="planCalendar" type="button">📅 <span>Calendrier pour la planification ATT</span></button><button id="planChoice" type="button">⏰ <span>Jour de votre planification ATT</span></button></div>
       </div>
       <select id="driver" class="header-control driver-control" aria-label="Chauffeur"><option>Tous</option><option>Arnold</option><option>Patricio</option><option>Dini</option><option>Pablo</option><option>Gonzalo</option></select>
@@ -471,7 +562,7 @@ function dayTone(k){
  if(wd===6)return {cls:'sat-tone',holiday:'',school:school};
  return {cls:'',holiday:'',school:school};
 }
-function render(){var ds=dates();$('period').textContent=current.toLocaleDateString('fr-CH',{month:'long',year:'numeric'});$('viewDateLabel').textContent=view==='day'?fmt(current):view==='week'?'Semaine du '+european(key(ds[0]))+' au '+european(key(ds[6])):'';document.querySelector('.weekdays').innerHTML=(view==='day'?[current.toLocaleDateString('fr-CH',{weekday:'long'})]:view==='week'?ds.map(function(d){return d.toLocaleDateString('fr-CH',{weekday:'short'})}):['Lun','Mar','Mer','Jeu','Ven','Sam','Dim']).map(function(w){return '<span>'+esc(w)+'</span>'}).join('');$('calendar').style.gridTemplateColumns=view==='day'?'1fr':view==='week'?'repeat(7,minmax(0,1fr))':'repeat(7,minmax(0,1fr))';document.querySelector('.weekdays').style.gridTemplateColumns=view==='day'?'1fr':'repeat(7,minmax(0,1fr))';$('calendar').innerHTML=ds.map(function(d){var k=key(d);var rs=rows(k);var noted=rs.filter(function(r){return realNote(r).trim().length>0});var dotDrivers={};noted.forEach(function(r){dotDrivers[r.driver]=true});choixFor(k).forEach(function(x){dotDrivers[x.driver]=true});var dots=PEOPLE.filter(function(p){return dotDrivers[p]}).map(function(p){return '<span class="dot" style="--c:'+COLORS[p]+'"></span>'}).join('');var other=view==='month'&&(d.getMonth()!==current.getMonth()||d.getFullYear()!==current.getFullYear());var tone=dayTone(k);var titleParts=[];if(tone.holiday)titleParts.push('Férié VD');else if(tone.school&&d.getDay()>=1&&d.getDay()<=5)titleParts.push('Vacances scolaires');var tip=titleParts.length?' title="'+esc(titleParts.join(' · '))+'"':'';return '<div class="day '+tone.cls+' '+(other?'other ':'')+(k===key(new Date())?'today ':'')+(k===selected?'selected':'')+'" data-date="'+k+'"'+tip+'><div class="daynum">'+d.getDate()+'</div><div class="dots">'+dots+'</div></div>'}).join('');$('calendar').querySelectorAll('[data-date]').forEach(function(el){el.onclick=function(){selected=el.dataset.date;var d=fromKey(selected);if(view==='month'&&(d.getMonth()!==current.getMonth()||d.getFullYear()!==current.getFullYear()))current=d;if(view==='day'||view==='week')current=d;render()}});var days=ds.filter(function(d){return view!=='month'||(d.getMonth()===current.getMonth()&&d.getFullYear()===current.getFullYear())}).filter(function(d){return key(d)>=selected});$('agenda').innerHTML=days.map(function(d){var k=key(d),tone=dayTone(k),rs=rows(k),cs=choixFor(k);if(!rs.length&&!cs.length)return '';var infos=[];if(tone.holiday)infos.push('Férié VD');else if(tone.school&&d.getDay()>=1&&d.getDay()<=5)infos.push('Vacances scolaires');var subtitle=infos.length?'<div class="muted" style="margin-top:4px">'+esc(infos.join(' · '))+'</div>':'';return '<div class="agenda-day"><div class="date-title '+tone.cls+'">'+esc(fmt(d))+subtitle+'</div>'+cs.map(function(x){return '<div class="choix-entry" style="--choix-color:'+COLORS[x.driver]+'" data-choix="'+esc(x.id)+'"><strong>⏰ '+choixLabel(x)+'</strong><div>'+esc(european(x.date))+' à '+esc(choixTime(x.time).replace(':','h'))+'</div></div>'}).join('')+rs.map(function(r){return '<div class="service" data-id="'+esc(r.id)+'"><span class="stripe" style="--c:'+COLORS[r.driver]+'"></span><span class="service-text">'+esc(r.driver)+' / '+esc(summary(r))+'</span><span>›</span></div>'}).join('')+'</div>'}).join('')||'<div class="empty">'+(loaded?'Aucun service pour cette période.':'Chargement des services…')+'</div>';$('agenda').querySelectorAll('[data-choix]').forEach(function(el){el.onclick=function(){choixOpen(el.getAttribute('data-choix'))}});$('agenda').querySelectorAll('[data-id]').forEach(function(el){el.onclick=function(){detail(el.dataset.id)}});updateShiftCountdown();updateBreakCountdown();choixBannerUpdate()}
+function render(){var ds=dates();$('period').textContent=current.toLocaleDateString('fr-CH',{month:'long',year:'numeric'});$('viewDateLabel').textContent=view==='day'?fmt(current):view==='week'?'Semaine du '+european(key(ds[0]))+' au '+european(key(ds[6])):'';document.querySelector('.weekdays').innerHTML=(view==='day'?[current.toLocaleDateString('fr-CH',{weekday:'long'})]:view==='week'?ds.map(function(d){return d.toLocaleDateString('fr-CH',{weekday:'short'})}):['Lun','Mar','Mer','Jeu','Ven','Sam','Dim']).map(function(w){return '<span>'+esc(w)+'</span>'}).join('');$('calendar').style.gridTemplateColumns=view==='day'?'1fr':view==='week'?'repeat(7,minmax(0,1fr))':'repeat(7,minmax(0,1fr))';document.querySelector('.weekdays').style.gridTemplateColumns=view==='day'?'1fr':'repeat(7,minmax(0,1fr))';$('calendar').innerHTML=ds.map(function(d){var k=key(d);var rs=rows(k);var noted=rs.filter(function(r){return realNote(r).trim().length>0});var dotDrivers={};noted.forEach(function(r){dotDrivers[r.driver]=true});choixFor(k).forEach(function(x){dotDrivers[x.driver]=true});var dots=PEOPLE.filter(function(p){return dotDrivers[p]}).map(function(p){return '<span class="dot" style="--c:'+COLORS[p]+'"></span>'}).join('');var other=view==='month'&&(d.getMonth()!==current.getMonth()||d.getFullYear()!==current.getFullYear());var tone=dayTone(k);var titleParts=[];if(tone.holiday)titleParts.push('Férié VD');else if(tone.school&&d.getDay()>=1&&d.getDay()<=5)titleParts.push('Vacances scolaires');var tip=titleParts.length?' title="'+esc(titleParts.join(' · '))+'"':'';return '<div class="day '+tone.cls+' '+(other?'other ':'')+(k===key(new Date())?'today ':'')+(k===selected?'selected':'')+'" data-date="'+k+'"'+tip+'><div class="daynum">'+d.getDate()+'</div><div class="dots">'+dots+'</div></div>'}).join('');$('calendar').querySelectorAll('[data-date]').forEach(function(el){el.onclick=function(){selected=el.dataset.date;var d=fromKey(selected);if(view==='month'&&(d.getMonth()!==current.getMonth()||d.getFullYear()!==current.getFullYear()))current=d;if(view==='day'||view==='week')current=d;render()}});var days=ds.filter(function(d){return view!=='month'||(d.getMonth()===current.getMonth()&&d.getFullYear()===current.getFullYear())}).filter(function(d){return key(d)>=selected});$('agenda').innerHTML=days.map(function(d){var k=key(d),tone=dayTone(k),rs=rows(k),cs=choixFor(k);if(!rs.length&&!cs.length)return '';var infos=[];if(tone.holiday)infos.push('Férié VD');else if(tone.school&&d.getDay()>=1&&d.getDay()<=5)infos.push('Vacances scolaires');var subtitle=infos.length?'<div class="muted" style="margin-top:4px">'+esc(infos.join(' · '))+'</div>':'';return '<div class="agenda-day"><div class="date-title '+tone.cls+'"><span class="day-title-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4M17 3v4M3 10h18"/></svg></span><span class="day-title-copy">'+esc(fmt(d))+subtitle+'</span></div>'+cs.map(function(x){return '<div class="choix-entry" style="--choix-color:'+COLORS[x.driver]+'" data-choix="'+esc(x.id)+'"><strong>⏰ '+choixLabel(x)+'</strong><div>'+esc(european(x.date))+' à '+esc(choixTime(x.time).replace(':','h'))+'</div></div>'}).join('')+rs.map(function(r){return '<div class="service" data-id="'+esc(r.id)+'"><span class="stripe" style="--c:'+COLORS[r.driver]+'"></span><span class="service-text">'+esc(r.driver)+' / '+esc(summary(r))+'</span><span>›</span></div>'}).join('')+'</div>'}).join('')||'<div class="empty">'+(loaded?'Aucun service pour cette période.':'Chargement des services…')+'</div>';$('agenda').querySelectorAll('[data-choix]').forEach(function(el){el.onclick=function(){choixOpen(el.getAttribute('data-choix'))}});$('agenda').querySelectorAll('[data-id]').forEach(function(el){el.onclick=function(){detail(el.dataset.id)}});updateShiftCountdown();updateBreakCountdown();choixBannerUpdate()}
 function move(n){followToday=false;if(view==='month'){current=new Date(current.getFullYear(),current.getMonth()+n,1,12);var today=new Date();selected=key(current.getMonth()===today.getMonth()&&current.getFullYear()===today.getFullYear()?today:current)}else{current=plus(current,n*(view==='week'?7:1));selected=key(current)}render()}
 function modal(title,html){$('dialogTitle').textContent=title;$('dialogBody').innerHTML=html;$('overlay').classList.remove('hidden')}
 function close(){$('overlay').classList.add('hidden');document.querySelector('.dialog').classList.remove('att-dialog')}
