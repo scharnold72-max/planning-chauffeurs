@@ -775,6 +775,7 @@ function choixBannerUpdate(){
 }
 function choixOpen(eventId,adminDriver,returnToPlanning){
  var found=choixEvents.filter(function(x){return x.id===eventId})[0];var driver=found?found.driver:(personalDriver==='Arnold'&&PEOPLE.includes(adminDriver)?adminDriver:personalDriver);
+ if(found&&personalDriver!=='Arnold'&&found.driver!==personalDriver){modal('Jour de planification','<p>'+esc(found.driver)+' · '+esc(european(found.date))+' · '+esc(choixTime(found.time))+'</p>');return}
  var canAssign=!found&&personalDriver==='Arnold'&&PEOPLE.includes(adminDriver);
  var picker=canAssign?'<label>Chauffeur<select name="assignedDriver">'+PEOPLE.map(function(p){return '<option'+(p===driver?' selected':'')+'>'+esc(p)+'</option>'}).join('')+'</select></label>':'';
  modal(found?'Modifier le jour de planification':canAssign?'Ajouter un jour de planification':'Ajouter votre jour de planification','<form id="choixForm" class="choix-form">'+picker+'<label>Date<input type="date" name="date" required value="'+esc(found?found.date:selected)+'"></label><label>Heure<input type="time" name="time" required value="'+esc(found?choixTime(found.time):'')+'"></label><div class="actions"><button class="primary" type="submit">Enregistrer</button>'+(found?'<button type="button" id="choixDelete">Supprimer</button>':'')+'</div><p id="choixStatus" class="muted"></p></form>');
@@ -1067,7 +1068,7 @@ function parseICS(text,driver){
   return o;
  }).filter(Boolean);
 }
-async function importICS(file,driver){try{var text=await new Promise(function(resolve,reject){var reader=new FileReader();reader.onload=function(){resolve(String(reader.result||''))};reader.onerror=reject;reader.readAsText(file,'UTF-8')});var rs=parseICS(text,driver);if(!rs.length)throw Error('Aucune journée trouvée');var nb=rs.reduce(function(n,r){return n+(r.segments||[]).length},0);rs.forEach(function(r){var old=records.find(function(x){return x.driver===driver&&x.date===r.date});if(old&&realNote(old).trim()&&!r.notes.trim())r.notes=realNote(old)});var already=rs.filter(function(r){return records.some(function(x){return x.driver===driver&&x.date===r.date})}).length;if(!confirm('Importer '+rs.length+' journées pour '+driver+' ('+nb+' tranches reconnues) ?'+(already?'\nAttention : '+already+' journées existantes seront remplacées.':'')))return;for(var i=0;i<rs.length;i+=100)await call('importData',rs.slice(i,i+100));close();await load(false);alert('Import terminé : '+rs.length+' journées')}catch(e){alert('Erreur importation : '+e.message)}}
+async function importICS(file,driver){var owner=personalDriver;if(!PEOPLE.includes(driver)||(owner!=='Arnold'&&owner!==driver))return;try{var text=await new Promise(function(resolve,reject){var reader=new FileReader();reader.onload=function(){resolve(String(reader.result||''))};reader.onerror=reject;reader.readAsText(file,'UTF-8')});var rs=parseICS(text,driver);if(!rs.length)throw Error('Aucune journée trouvée');var nb=rs.reduce(function(n,r){return n+(r.segments||[]).length},0);rs.forEach(function(r){var old=records.find(function(x){return x.driver===driver&&x.date===r.date});if(old&&realNote(old).trim()&&!r.notes.trim())r.notes=realNote(old)});var already=rs.filter(function(r){return records.some(function(x){return x.driver===driver&&x.date===r.date})}).length;if(!confirm('Importer '+rs.length+' journées pour '+driver+' ('+nb+' tranches reconnues) ?'+(already?'\nAttention : '+already+' journées existantes seront remplacées.':'')))return;for(var i=0;i<rs.length;i+=100){if(personalDriver!==owner)throw Error('La session a changé.');await call('importData',rs.slice(i,i+100))}close();await load(false);alert('Import terminé : '+rs.length+' journées')}catch(e){alert('Erreur importation : '+e.message)}}
 function showDatePicker(field){
  var host=$(field+'Picker'),other=field==='fromDate'?'toDate':'fromDate';
  var wasOpen=!host.classList.contains('hidden');
@@ -1177,9 +1178,9 @@ $('planChoice').onclick=function(){closeHeaderMenus();choixOpen('')};
 $('addQuick').onclick=function(){closeHeaderMenus();var d=selected;modal('Ajouter','<div class="add-choice-grid"><button type="button" id="addPersonalChoice"><strong>Personnel</strong><span>Rendez-vous privé</span></button><button type="button" id="addTLChoice"><strong>Travail TL</strong><span>Ajouter un service</span></button></div>');document.querySelector('.dialog').classList.add('add-choice-dialog');$('addPersonalChoice').focus();$('addPersonalChoice').onclick=function(){editPersonal('',d)};$('addTLChoice').onclick=function(){editor('',d)}};
 function addProfileNavigation(active){
  var links=[['photo','Photo','<rect x="3" y="4" width="18" height="16" rx="3"/><circle cx="15" cy="9" r="1.5"/><path d="m3 16 5-5 5 5 2-2 6 5"/>',function(){openProfile('photo')}],['reminders','Rappels','<path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/>',function(){openProfile('reminders')}]];
- if(personalDriver==='Arnold')links.push(
-  ['ics','ICS','<path d="M5 3h9l5 5v13H5zM14 3v5h5m-7 10v-7m-3 3 3-3 3 3"/>',openAdminImport],
-  ['planning','Planif.','<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 10h18m-12 5 2 2 4-4"/>',openAdminPlanning]);
+ links.push(
+  ['ics','ICS','<path d="M5 3h9l5 5v13H5zM14 3v5h5m-7 10v-7m-3 3 3-3 3 3"/>',openProfileImport],
+  ['planning','Planif.','<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M7 3v4m10-4v4M3 10h18m-12 5 2 2 4-4"/>',openProfilePlanning]);
  var nav=document.createElement('nav');nav.className='profile-links';nav.setAttribute('aria-label','Navigation du profil');
  links.forEach(function(link){
   var current=link[0]===active;
@@ -1194,32 +1195,34 @@ function addProfileNavigation(active){
 function planningDriverOptions(defaultDriver){
  return PEOPLE.map(function(person){return '<option'+(person===defaultDriver?' selected':'')+'>'+esc(person)+'</option>'}).join('');
 }
-function openAdminImport(){
- if(personalDriver!=='Arnold')return;
- modal('Importer un fichier ICS','<div class="choix-form"><select id="adminIcsDriver" aria-label="Nom">'+planningDriverOptions('Arnold')+'</select><div class="actions"><button type="button" class="primary" id="adminChooseIcs">Choisir un fichier ICS</button></div><input id="adminIcsFile" type="file" accept=".ics,text/calendar" class="hidden"></div>');
+function openProfileImport(){
+ if(!PEOPLE.includes(personalDriver))return;
+ var owner=personalDriver,isAdmin=owner==='Arnold';
+ modal('Importer un fichier ICS','<div class="choix-form">'+(isAdmin?'<select id="adminIcsDriver" aria-label="Nom">'+planningDriverOptions(owner)+'</select>':'<p><strong>'+esc(owner)+'</strong></p>')+'<div class="actions"><button type="button" class="primary" id="adminChooseIcs">Choisir un fichier ICS</button></div><input id="adminIcsFile" type="file" accept=".ics,text/calendar" class="hidden"></div>');
  addProfileNavigation('ics');
  $('adminChooseIcs').onclick=function(){$('adminIcsFile').click()};
- $('adminIcsFile').onchange=function(){if(this.files[0])importICS(this.files[0],$('adminIcsDriver').value)};
+ $('adminIcsFile').onchange=function(){if(this.files[0]&&personalDriver===owner)importICS(this.files[0],isAdmin?$('adminIcsDriver').value:owner)};
 }
-function openAdminPlanning(defaultDriver){
- if(personalDriver!=='Arnold')return;
- var entries=choixEvents.filter(function(event){return PEOPLE.includes(event.driver)}).sort(function(a,b){return a.date.localeCompare(b.date)||String(a.time).localeCompare(String(b.time))});
+function openProfilePlanning(defaultDriver){
+ if(!PEOPLE.includes(personalDriver))return;
+ var owner=personalDriver,isAdmin=owner==='Arnold';
+ var entries=choixEvents.filter(function(event){return isAdmin?PEOPLE.includes(event.driver):event.driver===owner}).sort(function(a,b){return a.date.localeCompare(b.date)||String(a.time).localeCompare(String(b.time))});
  var options=planningDriverOptions(PEOPLE.includes(defaultDriver)?defaultDriver:'Patricio');
- modal('Jours de planification','<form id="adminPlanForm" class="choix-form"><select name="driver" aria-label="Nom">'+options+'</select><div class="formgrid"><label>Date<input name="date" type="date" required value="'+esc(selected)+'"></label><label>Heure<input name="time" type="time" required></label></div><div class="actions"><button type="submit" class="primary">Enregistrer</button></div><p id="adminPlanStatus" role="status"></p></form>'+(entries.length?'<h3>Jours enregistrés</h3>':'')+'<div class="admin-planning-list">'+entries.map(function(event,index){return '<button type="button" data-choice-index="'+index+'">'+esc(event.driver)+' · '+esc(european(event.date))+' · '+esc(choixTime(event.time))+'</button>'}).join('')+'</div>');
+ modal('Jours de planification','<form id="adminPlanForm" class="choix-form">'+(isAdmin?'<select name="driver" aria-label="Nom">'+options+'</select>':'<p><strong>'+esc(owner)+'</strong></p>')+'<div class="formgrid"><label>Date<input name="date" type="date" required value="'+esc(selected)+'"></label><label>Heure<input name="time" type="time" required></label></div><div class="actions"><button type="submit" class="primary">Enregistrer</button></div><p id="adminPlanStatus" role="status"></p></form>'+(entries.length?'<h3>Jours enregistrés</h3>':'')+'<div class="admin-planning-list">'+entries.map(function(event,index){return '<button type="button" data-choice-index="'+index+'">'+esc(event.driver)+' · '+esc(european(event.date))+' · '+esc(choixTime(event.time))+'</button>'}).join('')+'</div>');
  addProfileNavigation('planning');
  var form=$('adminPlanForm'),status=$('adminPlanStatus');
  form.onsubmit=async function(event){
   event.preventDefault();
-  var driver=form.elements.driver.value,date=form.elements.date.value,time=form.elements.time.value;
-  if(personalDriver!=='Arnold'||!PEOPLE.includes(driver))return;
+  var driver=isAdmin?form.elements.driver.value:owner,date=form.elements.date.value,time=form.elements.time.value;
+  if(personalDriver!==owner||!PEOPLE.includes(driver))return;
   var button=form.querySelector('[type=submit]');button.disabled=true;status.textContent='';
   try{
    if(!choixEvents.some(function(entry){return entry.driver===driver&&entry.date===date&&choixTime(entry.time)===time}))await call('choixSave',{id:'',driver:driver,date:date,time:time});
    await choixLoad();
-   if(form.isConnected){openAdminPlanning(driver);$('adminPlanStatus').textContent='Enregistré pour '+driver+'.'}
+   if(form.isConnected){openProfilePlanning(driver);$('adminPlanStatus').textContent='Enregistré pour '+driver+'.'}
   }catch(e){status.textContent='Erreur : '+e.message}finally{button.disabled=false}
  };
- $('dialogBody').querySelectorAll('[data-choice-index]').forEach(function(button){button.onclick=function(){var entry=entries[Number(button.dataset.choiceIndex)];choixOpen(entry.id,entry.driver,openAdminPlanning)}});
+ $('dialogBody').querySelectorAll('[data-choice-index]').forEach(function(button){button.onclick=function(){var entry=entries[Number(button.dataset.choiceIndex)];choixOpen(entry.id,entry.driver,openProfilePlanning)}});
 }
 $('personalToggle').onclick=function(){personalVisible=!personalVisible;applyAccount();render()};$('scopeButton').onclick=function(){$('driver').value=$('driver').value==='Tous'?personalDriver:'Tous';applyAccount();render()};function openProfile(section){
  var owner=personalDriver;
