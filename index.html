@@ -1167,16 +1167,33 @@ function openAdminSettings(){
  var options=PEOPLE.map(function(p){return '<option>'+esc(p)+'</option>'}).join('');
  modal('Paramètres administrateur','<div class="choix-form"><label>Chauffeur<select id="adminDriver">'+options+'</select></label><div class="actions"><button type="button" class="primary" id="adminImport">Importer un fichier ICS</button><button type="button" id="adminPlanning">Jours de planification</button></div></div>');
  $('adminImport').onclick=function(){transfer('import',$('adminDriver').value)};
- $('adminPlanning').onclick=function(){openAdminPlanning($('adminDriver').value)};
+ $('adminPlanning').onclick=function(){openAdminPlanning()};
 }
-function openAdminPlanning(driver){
- if(personalDriver!=='Arnold'||!PEOPLE.includes(driver))return;
- var entries=choixEvents.filter(function(event){return event.driver===driver}).sort(function(a,b){return a.date.localeCompare(b.date)||String(a.time).localeCompare(String(b.time))});
- modal('Jours de planification · '+driver,'<div class="choix-form"><button type="button" class="primary" id="adminNewChoice">Ajouter un jour</button><div class="admin-planning-list">'+entries.map(function(event,index){return '<button type="button" data-choice-index="'+index+'">'+esc(european(event.date))+' · '+esc(choixTime(event.time))+'</button>'}).join('')+'</div></div>');
- $('adminNewChoice').onclick=function(){choixOpen('',driver)};
- $('dialogBody').querySelectorAll('[data-choice-index]').forEach(function(button){button.onclick=function(){choixOpen(entries[Number(button.dataset.choiceIndex)].id,driver)}});
+function openAdminPlanning(){
+ if(personalDriver!=='Arnold')return;
+ var entries=choixEvents.filter(function(event){return PEOPLE.includes(event.driver)}).sort(function(a,b){return a.date.localeCompare(b.date)||String(a.time).localeCompare(String(b.time))});
+ var options=PEOPLE.map(function(p){return '<option value="'+esc(p)+'">'+esc(p)+'</option>'}).join('');
+ modal('Jours de planification','<form id="adminPlanForm" class="choix-form"><label>Chauffeurs<select name="driver"><option value="all">Les 5 chauffeurs</option>'+options+'</select></label><div class="formgrid"><label>Date<input name="date" type="date" required value="'+esc(selected)+'"></label><label>Heure<input name="time" type="time" required></label></div><div class="actions"><button type="submit" class="primary">Enregistrer</button></div><p id="adminPlanStatus" role="status"></p></form>'+(entries.length?'<h3>Jours enregistrés</h3>':'')+'<div class="admin-planning-list">'+entries.map(function(event,index){return '<button type="button" data-choice-index="'+index+'">'+esc(event.driver)+' · '+esc(european(event.date))+' · '+esc(choixTime(event.time))+'</button>'}).join('')+'</div>');
+ var form=$('adminPlanForm'),status=$('adminPlanStatus'),completed=new Set();
+ form.onsubmit=async function(event){
+  event.preventDefault();if(personalDriver!=='Arnold')return;
+  var driver=form.elements.driver.value,date=form.elements.date.value,time=form.elements.time.value;
+  var targets=driver==='all'?PEOPLE:PEOPLE.filter(function(p){return p===driver});
+  var controls=Array.from(form.elements);controls.forEach(function(control){control.disabled=true});
+  var failed=[];
+  for(var person of targets){
+   var key=JSON.stringify([person,date,time]);
+   if(completed.has(key)||choixEvents.some(function(entry){return entry.driver===person&&entry.date===date&&choixTime(entry.time)===time}))continue;
+   try{await call('choixSave',{id:'',driver:person,date:date,time:time});completed.add(key)}catch(e){failed.push(person)}
+  }
+  await choixLoad();
+  controls.forEach(function(control){control.disabled=false});
+  if(!form.isConnected)return;
+  if(failed.length){status.textContent='À réessayer : '+failed.join(', ');return}
+  openAdminPlanning();$('adminPlanStatus').textContent='Enregistré pour '+targets.join(', ')+'.';
+ };
+ $('dialogBody').querySelectorAll('[data-choice-index]').forEach(function(button){button.onclick=function(){var entry=entries[Number(button.dataset.choiceIndex)];choixOpen(entry.id,entry.driver)}});
 }
-
 $('personalToggle').onclick=function(){personalVisible=!personalVisible;applyAccount();render()};$('scopeButton').onclick=function(){$('driver').value=$('driver').value==='Tous'?personalDriver:'Tous';applyAccount();render()};$('profileButton').onclick=function(){
  var owner=personalDriver;
  modal('Mon profil · '+owner,'<nav class="profile-nav" aria-label="Profil"><button type="button" id="profileShowPhoto" aria-pressed="true">Photo de profil</button><button type="button" id="profileShowReminders" aria-pressed="false">Rappels et minuteurs</button>'+(owner==='Arnold'?'<button type="button" id="profileSettings"><svg class="tl-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" aria-hidden="true"><path d="m10 3 4 0 .5 3 2 .9 2.6-1.4 2 3.5-2 2v2l2 2-2 3.5-2.6-1.4-2 .9-.5 3h-4l-.5-3-2-.9-2.6 1.4-2-3.5 2-2v-2l-2-2 2-3.5 2.6 1.4 2-.9Z"/><circle cx="12" cy="12" r="3"/></svg> Paramètres</button>':'')+'</nav><section class="profile-section" id="profilePhotoPane"><img id="profilePreview" alt="" width="56" height="56"><label>Choisir une photo<input id="profilePhoto" type="file" accept="image/*"></label><p id="profilePhotoStatus" role="status" hidden></p></section><form id="reminderPrefs" class="profile-section" hidden><div class="formgrid"><label>Début du travail (minutes avant)<input name="work" type="number" min="0" max="1440" required value="'+reminderLead('work')+'"></label><label>Rendez-vous personnel (minutes avant)<input name="personal" type="number" min="0" max="1440" required value="'+reminderLead('personal')+'"></label><label>Alerte rouge avant la reprise (minutes)<input name="break" type="number" min="0" max="1440" required value="'+reminderLead('break')+'"></label></div><p class="muted">Le minuteur démarre à la fin de chaque tranche suivie d’une pause et reste visible jusqu’à la reprise.</p><div class="actions"><button class="primary">Enregistrer</button></div></form>');
