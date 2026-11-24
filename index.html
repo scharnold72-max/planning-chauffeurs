@@ -616,7 +616,7 @@ function updateShiftCountdown(){
  var panel=$('shiftCountdown'),host=$('shiftCountdownRows');if(!panel||!host)return;
  var now=Date.now(),driver=personalDriver;
  var upcoming=records.filter(function(r){return r.driver===driver})
- .map(function(r){var first=serviceTranches(r)[0],start=r.start,m=shiftStartMinutes(start);if(m===null&&first){start=first.start;m=shiftStartMinutes(start)}return {r:r,start:start,seconds:m===null?null:Math.ceil((shiftInstant(r.date,m)-now)/1000)}})
+ .map(function(r){var first=serviceTranches(r)[0],start=r.start,m=trancheMinutes(start);if(m===null&&first){start=first.start;m=trancheMinutes(start)}return {r:r,start:start,seconds:m===null?null:Math.ceil((shiftInstant(r.date,m)-now)/1000)}})
  .filter(function(x){return x.seconds!==null&&x.seconds>0&&x.seconds<=reminderLead('work')*60})
  .sort(function(a,b){return a.seconds-b.seconds});
  if(!upcoming.length){panel.classList.add('hidden');host.innerHTML='';return}
@@ -631,7 +631,9 @@ function updateShiftCountdown(){
 
 // Pause entre tranches : affichage de la fin effective jusqu'au debut suivant.
 // Les heures manquantes ou invalides ne produisent pas de faux compte a rebours.
-function trancheMinutes(value){return shiftStartMinutes(value)}
+function readTLHours(value){return Array.from(String(value||'').matchAll(/(?:^|[^\d:])([0-3]?\d|4[0-7])\s*[:hH]\s*([0-5]\d)(?!\d)/g),m=>Number(m[1])*60+Number(m[2]));}
+function normalizeTLTranche(segment){const start=readTLHours(segment.start)[0],end=readTLHours(segment.end)[0];if(start!==undefined&&end!==undefined)return segment;const label=[segment.vehicle,segment.line,segment.from,segment.to].find(value=>readTLHours(value).length===2);if(!label)return segment;const times=readTLHours(label).map(value=>Math.floor(value/60)+':'+String(value%60).padStart(2,'0'));return Object.assign({},segment,{start:start===undefined?times[0]:segment.start,end:end===undefined?times[1]:segment.end});}
+function trancheMinutes(value){const times=readTLHours(value);return times.length?times[0]:null}
 function trancheBreaks(r){
  var segments=serviceTranches(r);
  if(segments.length<2)return [];
@@ -787,7 +789,7 @@ function interpreted(r){
  return {segments:segments,note:actual,legacy:legacy};
 }
 function realNote(r){return interpreted(r).note}
-function serviceTranches(r){var data=interpreted(r);if(data.segments.length)return data.segments;
+function serviceTranches(r){var data=interpreted(r);if(data.segments.length)return data.segments.map(normalizeTLTranche);
  if(r.service&&r.start&&r.end)return [{from:r.service,start:r.start,end:r.end,to:r.destination||'',line:'',vehicle:''}];
  return [];
 }
