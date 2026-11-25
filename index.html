@@ -1262,7 +1262,7 @@ async function openProfileUsers(){
  }
  function showCode(result){
   const output=panel.querySelector('output');
-  output.textContent=result.code;
+  output.textContent=result.name+' · '+result.code;
   output.hidden=false;
   const button=panel.querySelector('[data-copy-code]');
   button.hidden=false;button.textContent='Copier le code';
@@ -1279,7 +1279,7 @@ async function openProfileUsers(){
   const users=await call('listUsers');
   if(!panel.isConnected)return;
   panel.innerHTML='<table class="admin-users"><thead><tr><th>Personne</th><th>Code d’accès</th><th>Accès</th></tr></thead><tbody>'+users.map(function(user){
-   return '<tr><th scope="row">'+esc(user.name)+'</th><td><button type="button" data-rotate>Modifier</button></td><td>'+(user.access==='admin'?'Administrateur':'<select aria-label="Accès de '+esc(user.name)+'"><option value="individual">Individuel</option><option value="group">Les Grillos</option></select>')+'</td></tr>';
+   return '<tr><th scope="row">'+esc(user.name)+'</th><td><button type="button" data-reveal>Afficher le code</button> <button type="button" data-rotate>Modifier</button></td><td>'+(user.access==='admin'?'Administrateur':'<select aria-label="Accès de '+esc(user.name)+'"><option value="individual">Individuel</option><option value="group">Les Grillos</option></select>')+'</td></tr>';
   }).join('')+'</tbody></table><button type="button" data-add>+ Ajouter une personne</button><form hidden><label>Nom <input name="name" required maxlength="50"></label><label>Accès <select name="access"><option value="individual">Individuel</option><option value="group">Les Grillos</option></select></label><button type="submit">Ajouter</button></form><p><output hidden></output> <button type="button" data-copy-code hidden>Copier le code</button></p><button type="button" data-copy-link>Copier le lien</button><p role="status"></p>';
   panel.querySelectorAll('tbody tr').forEach(function(row,index){
    const user=users[index], select=row.querySelector('select'), rotate=row.querySelector('[data-rotate]');
@@ -1290,6 +1290,17 @@ async function openProfileUsers(){
      catch(e){select.value=user.access;throw e}
     });
    }
+   const reveal=row.querySelector('[data-reveal]');
+   reveal.onclick=()=>run(reveal,async function(){
+    const result=await call('listUsers',{revealName:user.name});
+    if(!result.code){
+     panel.querySelector('output').hidden=true;
+     panel.querySelector('[data-copy-code]').hidden=true;
+     panel.querySelector('[role=status]').textContent=user.name+' · Code non récupérable';
+     return;
+    }
+    showCode(result);
+   });
    rotate.onclick=()=>{if(confirm('Remplacer le code de '+user.name+' ?'))run(rotate,async()=>showCode(await call('rotateUserCode',{name:user.name})))};
   });
   const form=panel.querySelector('form');
