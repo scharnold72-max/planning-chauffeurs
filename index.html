@@ -960,6 +960,7 @@ function render(){
  $('agenda').querySelectorAll('[data-choix]').forEach(function(el){el.onclick=function(){choixOpen(el.getAttribute('data-choix'))}});
  $('agenda').querySelectorAll('[data-id]').forEach(function(el){el.onclick=function(){detail(el.dataset.id)}});
  updateShiftCountdown();updateBreakCountdown();synchronizeTimerPanel();choixBannerUpdate();
+ markAgendaDate();
 }
 
 function move(n){followToday=false;if(view==='month'){current=new Date(current.getFullYear(),current.getMonth()+n,1,12);var today=new Date();selected=key(current.getMonth()===today.getMonth()&&current.getFullYear()===today.getFullYear()?today:current)}else{current=plus(current,n*(view==='week'?7:1));selected=key(current)}render()}
@@ -985,6 +986,25 @@ if(window.ResizeObserver){
  stickyObserver.observe(document.getElementById('swipeArea'));
 }
 updateStickyTop();
+// Track the agenda without changing its starting date.
+var agendaScrollFrame=0;
+function markAgendaDate(){
+ var calendar=$('swipeArea'),agenda=$('agenda');
+ if(!calendar.getClientRects().length)return;
+ var edge=calendar.getBoundingClientRect().bottom+16;
+ var date=selected;
+ for(var card of agenda.querySelectorAll('[data-agenda-date]')){
+  if(card.getBoundingClientRect().top>edge)break;
+  date=card.dataset.agendaDate;
+ }
+ $('calendar').querySelectorAll('[data-date]').forEach(function(day){
+  day.classList.toggle('selected',day.dataset.date===date);
+ });
+}
+window.addEventListener('scroll',function(){
+ if(agendaScrollFrame)return;
+ agendaScrollFrame=window.requestAnimationFrame(function(){agendaScrollFrame=0;markAgendaDate()});
+},{passive:true});
 // Au choix d'une date, replacer sa journée juste sous le calendrier fixe.
 function bringSelectedDayIntoView(){
  var selectedCard=document.querySelector('.agenda-day[data-agenda-date="'+selected+'"]');
