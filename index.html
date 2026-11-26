@@ -1030,7 +1030,7 @@ function close(){document.querySelector('.agent-card-photo')?.remove();$('overla
 function box(label,val){return '<div class="detailbox"><small>'+esc(label)+'</small><strong>'+esc(val||'—')+'</strong></div>'}
 var agentPhotoSession=null,agentPhotoPromise=null;
 function showAgentCardPhoto(driver){
- if(driver!=='Youri'||personalDriver!==driver||!sessionToken)return;
+ if(driver!=='Youri'||(personalDriver!==driver&&personalDriver!=='Arnold')||!sessionToken)return;
  const token=sessionToken;
  const image=document.createElement('img');
  image.className='agent-card-photo';
