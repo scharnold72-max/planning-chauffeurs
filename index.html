@@ -1122,6 +1122,8 @@ function parseICS(text,driver){
   else if(!o.job)o.notes=main;
   var duration=fields.join(' / ').match(/(\d+h\d{1,2})\s*\+\s*(\d+h\d{1,2})/i);
   if(duration){o.work=duration[1];o.rr=duration[2]}
+  var pay=fields.find(function(field){return /^\d+(?:[.,]\d{1,2})?\s*(?:FRS|CHF)$/i.test(field)});
+  if(pay)o.pay=pay;
   // DESCRIPTION contient les tranches, et non des notes personnelles.
   var leftovers=[];
   desc.split('\n').forEach(function(line){
